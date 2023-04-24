@@ -1,88 +1,54 @@
-from constants import *
-import os.path
-#from utils import *
-class Transition:
-    def __init__(self, start_state, symbol, accept_state):
-        self.start_state = start_state
-        self.symbol = symbol
-        self.accept_state = accept_state
+from DFA import DFASubsets
+from NFA import *
 
-    def start(self, start_state):
-        self.start_state = start_state
+def push(stack, op):
+    stack.append(op)
 
-    def accept(self, accept_state):
-        self.accept_state = accept_state
 
-class State:
-    def __init__(self, label=None):
-        self.label = label
-        self.accept = False
+def pop(stack):
+    if not isEmpty(stack):
+        return stack.pop()
+    else:
+        BaseException("Error")
+        
 
-    def __repr__(self):
-        return f"{self.label}"
-    
-class NFA:
-    """
-    Representa el NFA:
-    -> donde q es el conjunto de estados
-    -> expr es una expresión regular que define el lenguaje aceptado por el NFA
-    -> alphabet es el alfabeto del lenguaje
-    -> q0 es el estado inicial
-    -> f es el conjunto de estados de aceptación 
-    -> transitions es el conjunto de transiciones entre estados
-    """
-    def __init__(self, q, expr, alphabet, q0, f, transitions):
-        self.q = q
-        self.expr = expr
-        self.alphabet = alphabet
-        self.q0 = q0
-        self.f = f
-        self.transitions = transitions
+def last(stack):
+    return stack[-1]
 
-    """
-    True if ther is any final state, False otherwise
-    """
-    def simulate(self, input_string):
-        current_states = self.e_closure(set([self.q0]))
-        for symbol in input_string:
-            new_states = set()
-            for state in current_states:
-                if state in self.transitions and symbol in self.transitions[state]:
-                    new_states = new_states.union(self.e_closure(self.transitions[state][symbol]))
-            current_states = new_states
-        return bool(current_states.intersection(self.f))
-    
-    def e_closure(self, states):
-        e_closure = set(states)
-        stack = list(states)
-        while stack:
-            state = stack.pop()
-            if state in self.transitions and EPSILON in self.transitions[state]:
-                for accept_state in self.transitions[state][EPSILON]:
-                    if accept_state not in e_closure:
-                        e_closure.add(accept_state)
-                        stack.append(accept_state)
-        return e_closure
-    
-    def showNFA(self,file_name):
-        file_path = Utils.create_file_path(file_name)
-        f = open(file_path+'.txt', 'w+', encoding="utf-8")
-        f.write("---------------NFA---------------\n")
-        f.write("Q: " + str(self.q))
-        f.write('\n')
-        f.write('Alphabet: ' + str(self.alphabet))
-        f.write('\n')
-        f.write('Inicio: ' +  str(self.q0))
-        f.write('\n')
-        f.write('Aceptacion: ' + str(self.f))
-        f.write('\n')
-        f.write("Transiciones: \n")
-        for start, transition_dict in self.transitions.items():
-            for symbol, accepts in transition_dict.items():
-                for accept in accepts:
-                    f.write(f'{start} -> {symbol} -> {accept}')
-        return (self)
-    
+
+def isEmpty(stack):
+    return len(stack) == 0
+
+
+def replace_string(string, char, replace):
+    result = ''
+    for x in string:
+        if x == char:
+            result += replace
+        else:
+            result += x
+    return result
+
+def getMatches(postfix, string):
+    #procesar la expresion regular
+    postfix.checkErrors()
+    postfix.replaceOperators()
+    print("Processed regex: ", postfix.regex)
+    postfix.toPostfix()
+    print("Postfix expression: ", postfix.postfix)
+    #construir el AFN primero para hacer luego AFD con subsets
+    print('asdasdas')
+    thompson = thompsonBuild(postfix.postfix)
+    dfa = DFASubsets(thompson)
+    newDFA = dfa.buildDFASubsets()
+    matches = []
+    #recorrer el string y buscar matches
+    simulation = newDFA.simulate(string)
+    if simulation:
+        matches.append(string)
+    return matches
+'''
+
 def thompsonBuild(postfix_expr):
     stack = []
     state_counter = 0
@@ -211,3 +177,4 @@ def thompsonBuild(postfix_expr):
             stack.append(NFA({start_state, accept_state}, postfix_expr, {symbol}, start_state, {accept_state}, new_transitions))
 
     return stack.pop()
+'''

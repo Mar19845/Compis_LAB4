@@ -54,6 +54,35 @@ class Utils():
         yales_files = [name.replace(".\\","") for name in yales_files]
         return yales_files
     
+    @staticmethod
+    def push(stack, op):
+        stack.append(op)
+    
+    @staticmethod
+    def pop(stack):
+        if not Utils.isEmpty(stack):
+            return stack.pop()
+        else:
+            BaseException("Error")
+            
+    @staticmethod
+    def last(stack):
+        return stack[-1]
+    
+    @staticmethod
+    def isEmpty(stack):
+        return len(stack) == 0
+    
+    @staticmethod
+    def replace_string(string, char, replace):
+        result = ''
+        for x in string:
+            if x == char:
+                result += replace
+            else:
+                result += x
+        return result
+ 
 class Grapher():
     def drawNFA(nfa,file_name):
         file_path = Utils.create_file_path(file_name)

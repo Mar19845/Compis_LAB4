@@ -1,0 +1,5 @@
+digraph "Expression Tree" {
+	rankdir=TB
+	node [shape=circle]
+	"•_0" [label="•"]
+}

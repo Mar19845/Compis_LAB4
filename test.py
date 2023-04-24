@@ -63,9 +63,12 @@ def testTree():
     file_name = str(uuid.uuid4().fields[-1])[:5]
     r = ("(a|b)*(b|a)*abb")
     postfixExp = InfixToPostfix(r)
-    augmented_exp = postfixExp.augmentRegex()
-    
-    direct = DFAfromTree(augmented_exp)
+    postfixExp.replaceOperators() 
+    postfixExp.toPostfix()
+    augmented_postfix_expression = postfixExp.postfix + '#.'
+    print(augmented_postfix_expression)
+    direct = DFAfromTree(augmented_postfix_expression)
+    print(direct.augmentedExp)
     newAFD = direct.buildDFADirect()
     newAFD.showDFADirect(file_name)
     
@@ -100,4 +103,27 @@ def testYalex():
     tree.generateTree(tree.tree)
     tree.showTable(file_name)
 
-testYalex()
+#testYalex()
+def testregex():
+    #regex = input("Enter regex: ")
+    file_name = str(uuid.uuid4().fields[-1])[:5]
+    yalexFile = "slr-4.yal"
+    yalex = Lexer(yalexFile)
+    individualRules = yalex.getIndividualRules()
+    print("individualRules: ", individualRules)
+    print()
+    regex = yalex.getFinalExp()
+    operators = yalex.getOperators()
+    print("expression----")
+    print(repr(regex))
+    print()
+    print("operators in use: ")
+    print(operators)
+    print()
+    
+    string = input("Enter string: ")
+    regex = InfixToPostfix(regex)
+    match = getMatches(string)
+    print("Matches: ", match)
+
+testregex()
