@@ -1,0 +1,8 @@
+digraph "Subset-DFA" {
+	rankdir=LR
+	0 [shape=ellipse]
+	fake [style=invisible]
+	fake -> 0 [style=bold]
+	1 [shape=doublecircle]
+	0 -> 1 [label="("]
+}

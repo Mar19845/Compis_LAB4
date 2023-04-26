@@ -37,7 +37,7 @@ class DFASubsets:
                 move.update(self.nfa.transitions[state][symbol])
         return self.eClosure(move) 
 
-    def buildDFASubsets(self):
+    def create_DFASubset(self):
         initial_state = frozenset(self.eClosure([self.nfa.q0]))
         self.states.append(initial_state)
         self.initial_state = initial_state
@@ -74,7 +74,7 @@ class DFASubsets:
                 return False
         return current_state in self.final_states
     
-    def minimizeSubsetAFD(self):
+    def min_DFASubset(self):
         partition = [set(self.final_states), set(self.states) - set(self.final_states)]
         worklist = [set(self.final_states)]
 
@@ -120,7 +120,7 @@ class DFASubsets:
         self.final_states = new_final_states
         self.transitions = new_transitions
 
-    def showSubsetDFA(self,file_name):
+    def showDFASubset(self,file_name):
         file_path = Utils.create_file_path(file_name)
         f = open(file_path+'.txt', 'w+', encoding="utf-8")
         f.write("---------------DFA---------------\n")

@@ -37,7 +37,8 @@ class Lexer:
         regex = ""
         operators = set()
         in_rule_tokens = False
-        operator_rules = {}  
+        operator_rules = {} 
+        rules_tokes = {} 
 
         with open(YALEX_DIRECTORY + self.file, "r") as file:
             lines = file.readlines()
@@ -58,8 +59,9 @@ class Lexer:
                     continue
                 if len(line) >= len(COMMENT_START2) and len(line) >= len(COMMENT_END2) and line[:len(COMMENT_START2)] == COMMENT_START2 and line[-len(COMMENT_END2):] == COMMENT_END2:
                     continue
-
-                if line.startswith("rule tokens"):
+                
+                if line.startswith("rule tokens".lower()):
+                    #print(line)
                     in_rule_tokens = True
                     # when reading the rule tokens, if 'id' is found, replace it with the regex for an identifier
                     if 'id' in self.individual_rules:
@@ -82,19 +84,57 @@ class Lexer:
                         operator_rules['operators'] = self.individual_rules['operators']
 
                 elif in_rule_tokens:
+                    # case after reading the rule tokens string
                     operator_line = line.lstrip()
+                    #print(operator_line)
                     if operator_line.startswith(ALTERNATIVE):
+                        # if line starts with | then drop it
                         operator_line = operator_line[1:]
+                        #print(operator_line)
+                        # while first char in line is space or  \t then drop it
                         while operator_line[0] in (' ', '\t'):
                             operator_line = operator_line[1:]
+                            #print(operator_line.rstrip())
+                        operator_line = operator_line.rstrip()
 
-                    operator = ""
+                    else:
+                        operator_line  = operator_line.rstrip()
+
+                    #print(operator_line)
+                    operator_line_list = operator_line.split(' ')
+                    
+                    if operator_line.find(OPEN_CORCHETE) and operator_line.find(CLOSED_CORCHETE):
+                        # get index of { and } in string
+                        OPEN_CORCHETE_index = operator_line.find(OPEN_CORCHETE)
+                        CLOSED_CORCHETE_index = operator_line.find(CLOSED_CORCHETE)
+                        
+                        # if indexes are found then 
+                        if OPEN_CORCHETE_index > 0 and CLOSED_CORCHETE_index > 0:
+                            # sumns len of yal return + 2 spaces
+                            OPEN_CORCHETE_index += len(TOKEN_RETURN) + 2
+                            
+                            # get the real return value and delete blanks spaces
+                            values_token = operator_line[OPEN_CORCHETE_index:CLOSED_CORCHETE_index].lstrip().rstrip()
+                        else:
+                            # if indexes are not found in operator line the return None
+                            values_token = 'None'
+                    
+                    
+                    
+                    operator = ''
                     for c in operator_line:
                         if c in (' ', '\t'):
                             break
                         operator += c
-
+                    # esta malo pero no se como hacerlo bien sin quemarlo
+                    # replace ' and " in operator
+                    operator = operator.replace("'","")
+                    operator = operator.replace('"','')
+                    #print(operator)
                     if operator:
+                        if operator not in rules_tokes:
+                            rules_tokes[operator] = values_token
+                        #print(operator,values_token)
                         operators.add(operator)
 
                     rule_name = ""
@@ -112,10 +152,13 @@ class Lexer:
                     continue
 
         self.operators = operators
+        self.rules_tokes = rules_tokes
 
         for operator, reRule in operator_rules.items():
+            #print(operator,reRule,'\n')
             regex += reRule + "|"
-
+        #print(operator_rules.keys())
+        #print(regex)
         return regex[:-1]
 
     """Extracts a rule name and rule body from a line in the YALex specification"""
@@ -125,10 +168,12 @@ class Lexer:
             if c == '=':
                 partition_index = i
                 break
-
+        
+        #print(line[4: partition_index],line[partition_index + 1:])
         ruleName = self.removeSpaces(line[4: partition_index])
         ruleBody = self.removeSpaces(line[partition_index + 1:])
-        
+        #ruleBody = ruleBody.replace('E',EPSILON)
+        #print(ruleName,ruleBody)
         # Returns a tuple containing the rule name and rule body.
         return ruleName, ruleBody
 
@@ -156,12 +201,14 @@ class Lexer:
             if not c.isspace() or in_single_quotes or in_double_quotes:
                 if c != "'":
                     result += c
+        
         return result
 
     """Expands character ranges in a regular expression"""
     def expandExp(self, expression):
         expanded = []
         i = 0
+        
         while i < len(expression):
             if expression[i] == '\\':
                 if expression[i+1] == 't':
@@ -189,7 +236,9 @@ class Lexer:
     def handleChars(self, rule_body):
         result = ""
         i = 0
+        
         while i < len(rule_body):
+            #print(rule_body[i])
             if rule_body[i] == '\\':
                 if rule_body[i+1] == 't':
                     result += f'\\t'
@@ -247,6 +296,7 @@ class Lexer:
     def convertRegex(self, ruleBody):
         # Rule body defined in YALex specification
         ruleBody = self.handleChars(ruleBody)
+        #print(ruleBody)
         reRule = self.replaceRules(ruleBody)
 
         # Expand expressions after replacing the rules
@@ -282,4 +332,5 @@ class Lexer:
     #     return self.expanded_rules
 
     def getOperators(self):
-        return self.operators
+        #return self.operators
+        return self.rules_tokes

@@ -26,15 +26,12 @@ class Tree:
         self.firstpos = {}
         self.lastpos = {}
         self.nextpos = {}
-        self.getTree()
+        self.create_tree()
         if self.tree is None:
-            raise ValueError("Failed to construct the expression tree. Please check the input postfix expression.")
+            raise ValueError("Failed to construct the expression tree check the postfix expression.")
 
-    """
-    This method generates the expression tree using a depth-first search approach.
-    It calculates the nullable, firstpos, lastpos, and nextpos values for each node,
-    and assigns the node's id.
-    """
+    # creates the expression tree using a depth-first search approach
+    # calculates the nullable, firstpos, lastpos and nextpos values for each node
     def generateTree(self, node: Node, index: int = 0):
         if node is None:
             return index
@@ -45,7 +42,7 @@ class Tree:
         # Calculate nullable(n), firstpos(n), and lastpos(n)
         self.calcNodes(node)
 
-        # Check nullable dictionary
+        # Check nullable dict
         if self.nullable.get(node.id, False):
             self.nodes[node.id] = EPSILON
 
@@ -62,7 +59,8 @@ class Tree:
 
         return index
 
-    """Calculate nullable, firstpos, and lastpos values for a given node."""
+    
+    # calculate nullable, firstpos, and lastpos values for node
     def calcNodes(self, node):
         if node is None:
             return
@@ -103,7 +101,7 @@ class Tree:
             self.lastpos[node.id] = self.lastpos.get(node.left.id, [])
 
 
-    """Calculate nextpos values for a given node."""
+    # calculate next position values for node
     def calcNextPos(self, node):
 
         # Calculate nextpos based on the node's value
@@ -127,8 +125,8 @@ class Tree:
                         self.nextpos[lastpos] = self.firstpos[node.left.id]
                     self.nextpos[lastpos].sort()
 
-    """Construct the expression tree using a postfix expression.""" 
-    def getTree(self):
+    #create tree structure
+    def create_tree(self):
         for c in self.postfix:
             if c in SYMBOLS:
                 self.push(Node(c))
@@ -159,12 +157,12 @@ class Tree:
     def isEmpty(self):
         return len(self.stack) == 0
 
-    """Handle the tree traversal and rendering"""
-    def showTable(self, file_name,node=None):
+    #create png tree file from postfix
+    def create_tree_table(self, file_name,node=None):
         file_path = Utils.create_file_path(file_name)
         if node is None:
             node = self.tree
-            self.DOT = Digraph('Expression Tree', format='pdf')
+            self.DOT = Digraph('Expression Tree', format='png')
             self.DOT.attr(rankdir='TB')
             self.DOT.attr('node', shape='circle')
 
@@ -173,14 +171,14 @@ class Tree:
             left_node_label = ''.join(['\\\\' if c == '\\' else c for c in str(node.left.value)])
             self.DOT.node(left_node_name, left_node_label)  
             self.DOT.edge(f"{node.value}_{node.id}", left_node_name)
-            self.showTable(file_name,node=node.left)
+            self.create_tree_table(file_name,node=node.left)
 
         if node.right:
             right_node_name = f"{node.right.value}_{node.right.id}"
             right_node_label = ''.join(['\\\\' if c == '\\' else c for c in str(node.right.value)])
             self.DOT.node(right_node_name, right_node_label)  
             self.DOT.edge(f"{node.value}_{node.id}", right_node_name)
-            self.showTable(file_name,node=node.right)
+            self.create_tree_table(file_name,node=node.right)
 
         if node.id == self.tree.id:
             tree_node_name = f"{node.value}_{node.id}"

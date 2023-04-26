@@ -6,7 +6,6 @@ from utils import *
 import os.path
 
 
-
 class DFAfromTree:
     def __init__(self, augmented_exp: str):
         self.augmentedExp = augmented_exp
